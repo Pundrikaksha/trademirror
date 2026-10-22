@@ -1,0 +1,45 @@
+# Devpost Learn & Environment
+devpost/learner-profile.md
+.env
+.env.*
+!.env.example
+
+# Build & Package outputs
+build/
+*.apk
+*.aab
+
+# Flutter / Dart defaults
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/coverage/
+
+# Android build outputs & gradle
+.gradle/
+android/app/debug
+android/app/profile
+android/app/release
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ / IDEs
+*.iml
+*.ipr
+*.iws
+.idea/
