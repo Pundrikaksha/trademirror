@@ -12,25 +12,30 @@ const _header =
     'flDt,flTm,exTm,nOrdNo,exOrdId,flId,exSeg,sym,trdSym,expDt,stkPrc,optTp,'
     'trnsTp,fldQty,avgPrc,lotSz,prod,rptTp,usrId';
 
-String _row(String order, String side, int qty, String price,
-        {String date = '05-Oct-2026', String time = '09:30:00'}) =>
+String _row(
+  String order,
+  String side,
+  int qty,
+  String price, {
+  String date = '05-Oct-2026',
+  String time = '09:30:00',
+}) =>
     '$date,$time,$date $time,$order,X$order,F$order$time,nse_fo,NIFTY,'
     'NIFTY-13OCT26-25400-CE,13-Oct-2026,25400.00,CE,$side,$qty,$price,65,MIS,'
     'fill,SYNTH0001';
 
 void main() {
-  final expected = jsonDecode(
-          File('test/fixtures/expected_results.json').readAsStringSync())
-      as Map<String, dynamic>;
+  final expected =
+      jsonDecode(File('test/fixtures/expected_results.json').readAsStringSync())
+          as Map<String, dynamic>;
   final totals = expected['totals'] as Map<String, dynamic>;
   final habitCounts = expected['habit_counts'] as Map<String, dynamic>;
-  final expectedTrades =
-      (expected['trades'] as List).cast<Map<String, dynamic>>();
+  final expectedTrades = (expected['trades'] as List)
+      .cast<Map<String, dynamic>>();
 
   late MirrorResult result;
   setUpAll(() {
-    final fills =
-        parseKotakNeoTradebook(File(_samplePath).readAsStringSync());
+    final fills = parseKotakNeoTradebook(File(_samplePath).readAsStringSync());
     result = analyse(fills);
   });
 
@@ -48,10 +53,14 @@ void main() {
     test('totals match to the paisa', () {
       final c = result.charges;
       String s(int p) => paiseToDecimalString(p);
-      expect(s(result.trips.fold(0, (a, t) => a + t.buyValue)),
-          totals['buy_value']);
-      expect(s(result.trips.fold(0, (a, t) => a + t.sellValue)),
-          totals['sell_value']);
+      expect(
+        s(result.trips.fold(0, (a, t) => a + t.buyValue)),
+        totals['buy_value'],
+      );
+      expect(
+        s(result.trips.fold(0, (a, t) => a + t.sellValue)),
+        totals['sell_value'],
+      );
       expect(s(result.grossPnl), totals['gross_pnl']);
       expect(s(c.brokerage), totals['brokerage']);
       expect(s(c.stt), totals['stt']);
@@ -74,14 +83,19 @@ void main() {
         expect(t.id, id);
         expect(t.symbol, e['trading_symbol'], reason: '$id');
         expect(t.entryOrders.first, e['entry_order'], reason: '$id');
-        expect(t.exitOrders.isEmpty ? '' : t.exitOrders.first,
-            e['exit_order'], reason: '$id');
+        expect(
+          t.exitOrders.isEmpty ? '' : t.exitOrders.first,
+          e['exit_order'],
+          reason: '$id',
+        );
         expect(t.isLong, e['direction'] == 'long', reason: '$id');
         expect(t.qty, e['qty'], reason: '$id');
         expect(t.expiredWorthless, e['expired_worthless'], reason: '$id');
-        expect(t.holdCentiMinutes / 100,
-            closeTo((e['hold_minutes'] as num).toDouble(), 1e-9),
-            reason: '$id');
+        expect(
+          t.holdCentiMinutes / 100,
+          closeTo((e['hold_minutes'] as num).toDouble(), 1e-9),
+          reason: '$id',
+        );
         expect(s(t.buyValue), e['buy_value'], reason: '$id');
         expect(s(t.sellValue), e['sell_value'], reason: '$id');
         expect(s(t.grossPnl), e['gross_pnl'], reason: '$id');
@@ -101,31 +115,45 @@ void main() {
 
     test('habit counts', () {
       int n(Habit h) => result.habit(h).count;
-      expect(n(Habit.revenge) + n(Habit.revengeStrong),
-          habitCounts['revenge_total']);
+      expect(
+        n(Habit.revenge) + n(Habit.revengeStrong),
+        habitCounts['revenge_total'],
+      );
       expect(n(Habit.revengeStrong), habitCounts['revenge_strong']);
       expect(result.overtradingDays.length, habitCounts['overtrading_days']);
       expect(
-          result.overtradingDays
-              .map((d) => d.toIso8601String().substring(0, 10))
-              .toList(),
-          habitCounts['overtrading_day_dates']);
-      expect(n(Habit.overtradingDay), habitCounts['trades_on_overtrading_days']);
+        result.overtradingDays
+            .map((d) => d.toIso8601String().substring(0, 10))
+            .toList(),
+        habitCounts['overtrading_day_dates'],
+      );
+      expect(
+        n(Habit.overtradingDay),
+        habitCounts['trades_on_overtrading_days'],
+      );
       expect(n(Habit.expiryDay), habitCounts['expiry_day_trades']);
-      expect(result.trips.where((t) => t.expiredWorthless).length,
-          habitCounts['expired_worthless']);
+      expect(
+        result.trips.where((t) => t.expiredWorthless).length,
+        habitCounts['expired_worthless'],
+      );
       expect(n(Habit.loserHeldLong), habitCounts['loser_held_long_trades']);
       expect(result.normalTrips.length, habitCounts['normal_only']);
-      expect(result.trips.where((t) => !t.isLong).length,
-          habitCounts['short_trades']);
+      expect(
+        result.trips.where((t) => !t.isLong).length,
+        habitCounts['short_trades'],
+      );
       expect(result.winners, habitCounts['winners_net']);
       expect(result.losers, habitCounts['losers_net']);
       final hold = expected['hold_asymmetry'] as Map<String, dynamic>;
       expect(result.holdAsymmetryFlagged, hold['flagged']);
-      expect(result.medianWinnerHoldMin,
-          closeTo((hold['median_winner_hold_min'] as num).toDouble(), 1e-9));
-      expect(result.medianLoserHoldMin,
-          closeTo((hold['median_loser_hold_min'] as num).toDouble(), 1e-9));
+      expect(
+        result.medianWinnerHoldMin,
+        closeTo((hold['median_winner_hold_min'] as num).toDouble(), 1e-9),
+      );
+      expect(
+        result.medianLoserHoldMin,
+        closeTo((hold['median_loser_hold_min'] as num).toDouble(), 1e-9),
+      );
     });
 
     test('daily totals by exit date', () {
@@ -133,8 +161,9 @@ void main() {
       final days = result.days;
       expect(days.length, perDay.length);
       for (final d in days) {
-        final e = perDay[d.day.toIso8601String().substring(0, 10)]
-            as Map<String, dynamic>;
+        final e =
+            perDay[d.day.toIso8601String().substring(0, 10)]
+                as Map<String, dynamic>;
         expect(d.trips, e['round_trips_closed']);
         expect(paiseToDecimalString(d.net), e['net_pnl']);
       }
@@ -143,49 +172,90 @@ void main() {
 
   group('bad input', () {
     test('empty file', () {
-      expect(() => parseKotakNeoTradebook(''),
-          throwsA(isA<TradebookException>()
-              .having((e) => e.message, 'message', contains('empty'))));
-      expect(() => parseKotakNeoTradebook('  \n\n'),
-          throwsA(isA<TradebookException>()));
+      expect(
+        () => parseKotakNeoTradebook(''),
+        throwsA(
+          isA<TradebookException>().having(
+            (e) => e.message,
+            'message',
+            contains('empty'),
+          ),
+        ),
+      );
+      expect(
+        () => parseKotakNeoTradebook('  \n\n'),
+        throwsA(isA<TradebookException>()),
+      );
     });
 
     test('header only', () {
-      expect(() => parseKotakNeoTradebook('$_header\n'),
-          throwsA(isA<TradebookException>()
-              .having((e) => e.message, 'message', contains('no trades'))));
+      expect(
+        () => parseKotakNeoTradebook('$_header\n'),
+        throwsA(
+          isA<TradebookException>().having(
+            (e) => e.message,
+            'message',
+            contains('no trades'),
+          ),
+        ),
+      );
     });
 
     test('wrong headers', () {
       expect(
-          () => parseKotakNeoTradebook(
-              'Date,Symbol,Qty,Price\n05-Oct-2026,NIFTY,65,100.00\n'),
-          throwsA(isA<TradebookException>().having(
-              (e) => e.message, 'message', contains('Missing column'))));
+        () => parseKotakNeoTradebook(
+          'Date,Symbol,Qty,Price\n05-Oct-2026,NIFTY,65,100.00\n',
+        ),
+        throwsA(
+          isA<TradebookException>().having(
+            (e) => e.message,
+            'message',
+            contains('Missing column'),
+          ),
+        ),
+      );
     });
 
     test('malformed row reports its line', () {
-      final csv = '$_header\n${_row('A1', 'B', 65, '100.00')}\n'
+      final csv =
+          '$_header\n${_row('A1', 'B', 65, '100.00')}\n'
           '${_row('A2', 'S', 65, 'abc')}\n';
       expect(
-          () => parseKotakNeoTradebook(csv),
-          throwsA(isA<TradebookException>()
-              .having((e) => e.message, 'message', startsWith('Line 3'))));
+        () => parseKotakNeoTradebook(csv),
+        throwsA(
+          isA<TradebookException>().having(
+            (e) => e.message,
+            'message',
+            startsWith('Line 3'),
+          ),
+        ),
+      );
     });
 
     test('short row and bad side', () {
-      expect(() => parseKotakNeoTradebook('$_header\n05-Oct-2026,09:30:00\n'),
-          throwsA(isA<TradebookException>()));
       expect(
-          () => parseKotakNeoTradebook(
-              '$_header\n${_row('A1', 'X', 65, '100.00')}\n'),
-          throwsA(isA<TradebookException>()
-              .having((e) => e.message, 'message', contains('B or S'))));
+        () => parseKotakNeoTradebook('$_header\n05-Oct-2026,09:30:00\n'),
+        throwsA(isA<TradebookException>()),
+      );
+      expect(
+        () => parseKotakNeoTradebook(
+          '$_header\n${_row('A1', 'X', 65, '100.00')}\n',
+        ),
+        throwsA(
+          isA<TradebookException>().having(
+            (e) => e.message,
+            'message',
+            contains('B or S'),
+          ),
+        ),
+      );
     });
 
     test('unterminated quote', () {
-      expect(() => parseKotakNeoTradebook('$_header\n"oops,1\n'),
-          throwsA(isA<TradebookException>()));
+      expect(
+        () => parseKotakNeoTradebook('$_header\n"oops,1\n'),
+        throwsA(isA<TradebookException>()),
+      );
     });
   });
 
@@ -225,8 +295,10 @@ void main() {
 
     test('long with no exit after expiry closes at zero', () {
       final csv = [_header, _row('B1', 'B', 65, '100.00')].join('\n');
-      final r = analyse(parseKotakNeoTradebook(csv),
-          asOf: DateTime(2026, 10, 14));
+      final r = analyse(
+        parseKotakNeoTradebook(csv),
+        asOf: DateTime(2026, 10, 14),
+      );
       final t = r.trips.single;
       expect(t.expiredWorthless, isTrue);
       expect(t.sellValue, 0);

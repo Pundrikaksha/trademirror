@@ -20,7 +20,8 @@ int parsePaise(String raw) {
     }
     frac = frac.substring(0, 2);
   }
-  final paise = whole * 100 + (frac.isEmpty ? 0 : int.parse(frac.padRight(2, '0')));
+  final paise =
+      whole * 100 + (frac.isEmpty ? 0 : int.parse(frac.padRight(2, '0')));
   return m[1] == '-' ? -paise : paise;
 }
 

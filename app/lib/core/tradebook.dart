@@ -144,7 +144,8 @@ List<Fill> parseKotakNeoTradebook(String text) {
       final i = idx[name]!;
       if (i >= cells.length) {
         throw FormatException(
-            'expected ${header.length} columns, found ${cells.length}');
+          'expected ${header.length} columns, found ${cells.length}',
+        );
       }
       return cells[i];
     }
@@ -154,25 +155,29 @@ List<Fill> parseKotakNeoTradebook(String text) {
       final orderId = col('nOrdNo').trim();
       if (orderId.isEmpty) throw const FormatException('order number is empty');
       final symbol = col('trdSym').trim();
-      if (symbol.isEmpty) throw const FormatException('trading symbol is empty');
+      if (symbol.isEmpty) {
+        throw const FormatException('trading symbol is empty');
+      }
       final price = parsePaise(col('avgPrc'));
       if (price < 0) throw FormatException('negative price "${col('avgPrc')}"');
-      fills.add(Fill(
-        row: line,
-        time: _withTime(day, col('flTm')),
-        orderId: orderId,
-        fillId: col('flId').trim(),
-        underlying: col('sym').trim(),
-        symbol: symbol,
-        expiry: parseTradeDate(col('expDt')),
-        strike: col('stkPrc').trim(),
-        optionType: col('optTp').trim().toUpperCase(),
-        side: _side(col('trnsTp')),
-        qty: _positiveInt(col('fldQty'), 'quantity'),
-        pricePaise: price,
-        lotSize: _positiveInt(col('lotSz'), 'lot size'),
-        product: col('prod').trim(),
-      ));
+      fills.add(
+        Fill(
+          row: line,
+          time: _withTime(day, col('flTm')),
+          orderId: orderId,
+          fillId: col('flId').trim(),
+          underlying: col('sym').trim(),
+          symbol: symbol,
+          expiry: parseTradeDate(col('expDt')),
+          strike: col('stkPrc').trim(),
+          optionType: col('optTp').trim().toUpperCase(),
+          side: _side(col('trnsTp')),
+          qty: _positiveInt(col('fldQty'), 'quantity'),
+          pricePaise: price,
+          lotSize: _positiveInt(col('lotSz'), 'lot size'),
+          product: col('prod').trim(),
+        ),
+      );
     } on FormatException catch (e) {
       throw TradebookException('Line $line: ${e.message}.');
     }

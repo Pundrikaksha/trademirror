@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trademirror/features/coach/coach_screen.dart';
 import 'package:trademirror/features/dashboard/dashboard_screen.dart';
 import 'package:trademirror/features/habits/habits_screen.dart';
 import 'package:trademirror/features/import/import_screen.dart';
+import 'package:trademirror/features/tips/tips_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -43,8 +43,8 @@ final GoRouter appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/coach',
-              builder: (context, state) => const CoachScreen(),
+              path: '/tips',
+              builder: (context, state) => const TipsScreen(),
             ),
           ],
         ),
@@ -54,10 +54,7 @@ final GoRouter appRouter = GoRouter(
 );
 
 class ScaffoldWithNavBar extends StatelessWidget {
-  const ScaffoldWithNavBar({
-    required this.navigationShell,
-    super.key,
-  });
+  const ScaffoldWithNavBar({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
@@ -90,9 +87,9 @@ class ScaffoldWithNavBar extends StatelessWidget {
             label: 'Habits',
           ),
           NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Coach',
+            icon: Icon(Icons.lightbulb_outline),
+            selectedIcon: Icon(Icons.lightbulb),
+            label: 'Tips',
           ),
         ],
       ),

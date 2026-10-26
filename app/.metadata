@@ -15,7 +15,7 @@ migration:
     - platform: root
       create_revision: 63f32b48ac8658b26aee548013d58683c3a38533
       base_revision: 63f32b48ac8658b26aee548013d58683c3a38533
-    - platform: android
+    - platform: web
       create_revision: 63f32b48ac8658b26aee548013d58683c3a38533
       base_revision: 63f32b48ac8658b26aee548013d58683c3a38533
 

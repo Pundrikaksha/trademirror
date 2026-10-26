@@ -39,13 +39,13 @@ class Charges {
   int get total => brokerage + stt + exchangeTxn + sebiFee + stampDuty + gst;
 
   Charges operator +(Charges o) => Charges(
-        brokerage: brokerage + o.brokerage,
-        stt: stt + o.stt,
-        exchangeTxn: exchangeTxn + o.exchangeTxn,
-        sebiFee: sebiFee + o.sebiFee,
-        stampDuty: stampDuty + o.stampDuty,
-        gst: gst + o.gst,
-      );
+    brokerage: brokerage + o.brokerage,
+    stt: stt + o.stt,
+    exchangeTxn: exchangeTxn + o.exchangeTxn,
+    sebiFee: sebiFee + o.sebiFee,
+    stampDuty: stampDuty + o.stampDuty,
+    gst: gst + o.gst,
+  );
 }
 
 Charges computeCharges({
@@ -239,19 +239,24 @@ MirrorResult analyse(
   double overtradingMedianMultiple = 2.0,
   double holdAsymmetryMultiple = 2.0,
 }) {
-  final ordered = [...fills]..sort((a, b) {
+  final ordered = [...fills]
+    ..sort((a, b) {
       final c = a.time.compareTo(b.time);
       return c != 0 ? c : a.row.compareTo(b.row);
     });
-  final cutoff = _dateOnly(asOf ??
-      (ordered.isEmpty ? DateTime.now() : ordered.last.time));
+  final cutoff = _dateOnly(
+    asOf ?? (ordered.isEmpty ? DateTime.now() : ordered.last.time),
+  );
 
   // Group fills into orders per contract.
   final bySymbol = <String, Map<String, _Order>>{};
   for (final f in ordered) {
     final orders = bySymbol.putIfAbsent(f.symbol, () => {});
     final key = '${f.orderId}|${f.side.name}';
-    orders.putIfAbsent(key, () => _Order(f.orderId, f.side, f.time)).fills.add(f);
+    orders
+        .putIfAbsent(key, () => _Order(f.orderId, f.side, f.time))
+        .fills
+        .add(f);
   }
   final orderCount = {for (final f in fills) f.orderId}.length;
 
@@ -316,8 +321,10 @@ MirrorResult analyse(
     final t = trips[i];
     t.id = 'T${(i + 1).toString().padLeft(2, '0')}';
     // An order that both closes one trip and opens the next is charged once.
-    t.chargedOrders =
-        [...t.entryOrders, ...t.exitOrders].where(charged.add).length;
+    t.chargedOrders = [
+      ...t.entryOrders,
+      ...t.exitOrders,
+    ].where(charged.add).length;
     t.charges = computeCharges(
       buyValue: t.buyValue,
       sellValue: t.sellValue,
@@ -371,8 +378,10 @@ MirrorResult analyse(
       overDays.add(e.key);
       for (final t in e.value) {
         t.habits.add(Habit.overtradingDay);
-        t.reasons.add('One of ${e.value.length} trips opened that day '
-            '(threshold ${threshold.toStringAsFixed(0)}).');
+        t.reasons.add(
+          'One of ${e.value.length} trips opened that day '
+          '(threshold ${threshold.toStringAsFixed(0)}).',
+        );
       }
     }
   }
@@ -381,15 +390,16 @@ MirrorResult analyse(
   // Habit: losers held longer than winners.
   final winHolds = [
     for (final t in trips)
-      if (t.netPnl > 0) t.holdCentiMinutes
+      if (t.netPnl > 0) t.holdCentiMinutes,
   ];
   final loseHolds = [
     for (final t in trips)
-      if (t.netPnl < 0) t.holdCentiMinutes
+      if (t.netPnl < 0) t.holdCentiMinutes,
   ];
   final medWin = _median(winHolds);
   final medLose = _median(loseHolds);
-  final flagged = medWin != null &&
+  final flagged =
+      medWin != null &&
       medLose != null &&
       medLose >= holdAsymmetryMultiple * medWin;
   if (flagged) {
@@ -397,16 +407,20 @@ MirrorResult analyse(
     for (final t in trips) {
       if (t.netPnl < 0 && t.holdCentiMinutes >= limit) {
         t.habits.add(Habit.loserHeldLong);
-        t.reasons.add('Loser held ${_min(t.holdCentiMinutes)} min; '
-            'your typical winner is held ${_min(medWin)} min.');
+        t.reasons.add(
+          'Loser held ${_min(t.holdCentiMinutes)} min; '
+          'your typical winner is held ${_min(medWin)} min.',
+        );
       }
     }
   }
 
   for (final t in trips) {
     if (t.expiredWorthless) {
-      t.reasons.add('No exit in the file; expired worthless at 15:30 on '
-          '${t.expiry.day}-${t.expiry.month}-${t.expiry.year}.');
+      t.reasons.add(
+        'No exit in the file; expired worthless at 15:30 on '
+        '${t.expiry.day}-${t.expiry.month}-${t.expiry.year}.',
+      );
     }
     if (t.reasons.isEmpty) t.reasons.add('No habit rule triggered.');
   }
